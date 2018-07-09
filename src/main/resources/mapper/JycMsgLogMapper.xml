@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+"http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+
+<mapper namespace="com.lottery.print.dao.IJycMsgLogDAO">
+
+	<resultMap type="com.lottery.print.model.JycMsgLog" id="TbTradeRecordsResult" />
+
+	<!-- 用于select查询公用抽取的列 -->
+	<sql id="tbTradeRecordsColumns">
+	    <![CDATA[
+        	id as id,
+        	MERCH_ID as merchId,
+        	MESS_TYPE as messType,
+        	MESS_NUMBER as messNumber,
+        	MESS_TITLE as messTitle,
+        	MESS_CONTENT as messContent,
+        	TRADE_STATE as tradeState,
+        	EXT_ORDER_ID as extOrderId,
+        	TIME_INSERT as timeInsert,
+        	TIME_SEND as timeSend,
+        	TIME_FINISH as timeFinish,
+        	CALL_URL as callUrl,
+        	CALL_TIME as callTime,
+        	CALL_COUNT as callCount,
+        	MERCH_ORDER_ID as merchOrderId,
+        	call_state as callState
+	    ]]>
+	</sql>
+
+	<insert id="insert" parameterType="TbTradeRecords"  >
+	<selectKey resultType="java.lang.String" order="BEFORE" keyProperty="id">
+			SELECT to_char(sysdate,'YYYYMMDDHH24MISS')||lpad(seq_trade_records.nextval,6,'0') AS id FROM DUAL
+        </selectKey>
+    <![CDATA[ 
+        INSERT INTO
+        jyc_msg_log (
+        	id ,
+        	MERCH_ID ,
+        	MESS_TYPE ,
+        	MESS_NUMBER ,
+        	MESS_TITLE ,
+        	MESS_CONTENT ,
+        	TRADE_STATE ,
+        	EXT_ORDER_ID ,
+        	TIME_INSERT ,
+        	TIME_SEND ,
+        	CALL_URL ,
+        	CALL_TIME ,
+        	CALL_COUNT ,
+        	MERCH_ORDER_ID,
+        	TIME_FINISH,
+        	CALL_STATE
+        ) VALUES (
+        	#{id,jdbcType=BIGINT} ,
+        	#{merchId,jdbcType=DECIMAL} ,
+        	#{messType,jdbcType=DECIMAL} ,
+        	#{messNumber,jdbcType=VARCHAR} ,
+        	#{messTitle,jdbcType=VARCHAR} ,
+        	#{messContent,jdbcType=VARCHAR} ,
+        	#{tradeState,jdbcType=DECIMAL} ,
+        	#{extOrderId,jdbcType=VARCHAR} ,
+        	#{timeInsert,jdbcType=TIMESTAMP} ,
+        	#{timeSend,jdbcType=TIMESTAMP} ,
+        	#{callUrl,jdbcType=VARCHAR} ,
+        	#{callTime,jdbcType=TIMESTAMP} ,
+        	#{callCount,jdbcType=DECIMAL} ,
+        	#{merchOrderId,jdbcType=VARCHAR} ,
+        	#{timeFinish,jdbcType=TIMESTAMP} ,
+        	#{callState,jdbcType=DECIMAL} 
+        )
+    ]]>
+		<!--	
+			oracle: order="BEFORE" SELECT sequenceName.nextval AS ID FROM DUAL 
+			DB2: order="BEFORE"" values nextval for sequenceName
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="userId">
+			SELECT sequenceName.nextval AS ID FROM DUAL 
+        </selectKey>
+		-->
+	</insert>
+    
+	<update id="update" parameterType="TbTradeRecords">
+    <![CDATA[
+        UPDATE jyc_msg_log SET
+	        MERCH_ID = #{merchId,jdbcType=DECIMAL} ,
+	        MESS_TYPE = #{messType,jdbcType=DECIMAL} ,
+	        MESS_NUMBER = #{messNumber,jdbcType=VARCHAR} ,
+	        MESS_CONTENT = #{messContent,jdbcType=VARCHAR} ,
+	        TRADE_STATE = #{tradeState,jdbcType=DECIMAL} ,
+	        TIME_INSERT = #{timeInsert,jdbcType=TIMESTAMP} ,
+	        TIME_SEND = #{timeSend,jdbcType=TIMESTAMP} ,
+	        CALL_URL = #{callUrl,jdbcType=VARCHAR} ,
+	        CALL_TIME = #{callTime,jdbcType=DATE} ,
+	        CALL_COUNT = #{callCount,jdbcType=DECIMAL} 
+        WHERE 
+	        id = #{id} 
+    ]]>
+	</update>
+	
+	<!-- 修改加锁状态 -->
+	<update id="updateTbTradeRecordsLockState" parameterType="TbTradeRecords">
+    <![CDATA[
+	    UPDATE jyc_msg_log SET
+	        TRADE_STATE = #{tradeState,jdbcType=DECIMAL} 
+        WHERE 
+	        id = #{id} 
+    ]]>
+	</update>
+	
+	<!-- 修改发送状态 -->
+	<update id="updateTbTradeRecordsSendState" parameterType="TbTradeRecords">
+    <![CDATA[
+	    UPDATE jyc_msg_log SET
+	        MERCH_ID = #{merchId,jdbcType=DECIMAL},
+	        TRADE_STATE = #{tradeState,jdbcType=DECIMAL} ,
+	        EXT_ORDER_ID = #{extOrderId,jdbcType=VARCHAR} ,
+	        TIME_SEND = #{timeSend,jdbcType=TIMESTAMP} ,
+	        CALL_STATE = #{callState,jdbcType=DECIMAL} 
+        WHERE 
+	        id = #{id} 
+    ]]>
+	</update>
+	
+	<!-- 修改通知状态 -->
+	<update id="updateTradeRecordsCallBack" parameterType="TbTradeRecords">
+    <![CDATA[
+        UPDATE jyc_msg_log SET
+	        TRADE_STATE = #{tradeState,jdbcType=DECIMAL} ,
+	        CALL_TIME = #{callTime,jdbcType=TIMESTAMP} ,
+	        CALL_COUNT = #{callCount,jdbcType=DECIMAL} ,
+	        TIME_FINISH = #{timeFinish,jdbcType=TIMESTAMP} ,
+	        CALL_STATE = #{callState,jdbcType=DECIMAL} 
+        WHERE 
+	        id = #{id} 
+    ]]>
+	</update>
+	
+
+    <delete id="delete" parameterType="java.lang.String">
+    <![CDATA[
+        delete from jyc_msg_log where
+        id = #{id} 
+    ]]>
+    </delete>
+    
+    <select id="getById" parameterType="java.lang.String" resultMap="TbTradeRecordsResult">
+		select <include refid="tbTradeRecordsColumns" />
+	    <![CDATA[
+		    from jyc_msg_log 
+	        where 
+		        id = #{id} 
+	    ]]>
+	</select>
+	
+    <!-- 查询需要发送的记录 -->
+    <select id="queryForTbTradeRecordsSendList" parameterType="Map" resultMap="TbTradeRecordsResult">
+		<![CDATA[select a.id       as id,
+		a.MERCH_ID       as merchId,
+		a.MESS_TYPE      as messType,
+		a.MESS_NUMBER    as messNumber,
+		a.MESS_TITLE     as messTitle,
+		a.MESS_CONTENT   as messContent,
+		a.TRADE_STATE    as tradeState,
+		a.EXT_ORDER_ID   as extOrderId,
+		a.TIME_INSERT    as timeInsert,
+		a.TIME_SEND      as timeSend,
+		a.CALL_URL       as callUrl,
+		a.CALL_TIME      as callTime,
+		a.CALL_COUNT     as callCount,
+		a.MERCH_ORDER_ID as merchOrderId
+		from jyc_msg_log a]]>
+		where 1=1
+		<if test="null != messType">
+			and a.MESS_TYPE = #{messType}
+		</if>
+		and a.TRADE_STATE = #{tradeState}
+		order by a.TIME_INSERT
+		limit 0,#{queryCount}
+    </select>
+
+	<sql id="selectWhere">
+		<where>
+
+	       <if test="id !=null  and id != ''">
+				and a.id = #{id}
+			</if>
+	       <if test="null != merchId">
+				and a.MERCH_ID = #{merchId}
+			</if>
+	       <if test="null != tradeState and '' != tradeState">
+				and a.TRADE_STATE = #{tradeState}
+			</if>
+	       <if test="null != messType and '' != messType">
+				and a.MESS_TYPE = #{messType}
+			</if>
+		</where>
+	</sql>
+	
+    <!-- 查询需要发送的记录 -->
+    <select id="getCallBackList" parameterType="int" resultMap="TbTradeRecordsResult">
+		<![CDATA[select a.id       as id,
+		a.MERCH_ID       as merchId,
+		a.MESS_TYPE      as messType,
+		a.MESS_NUMBER    as messNumber,
+		a.MESS_TITLE     as messTitle,
+		a.MESS_CONTENT   as messContent,
+		a.TRADE_STATE    as tradeState,
+		a.EXT_ORDER_ID   as extOrderId,
+		a.TIME_INSERT    as timeInsert,
+		a.TIME_SEND      as timeSend,
+		a.CALL_URL       as callUrl,
+		a.CALL_TIME      as callTime,
+		a.CALL_COUNT     as callCount,
+		a.MERCH_ORDER_ID as merchOrderId,
+		a.TIME_FINISH	as timeFinish,
+		a.CALL_STATE		as callState
+		from jyc_msg_log a, tb_merchant_info b
+		where a.merch_id = b.merch_id
+		and a.trade_state <= 0
+		and a.call_url is not null
+		and length(a.call_url)>10
+		and a.call_state = 20
+		and a.call_count <6
+		order by a.TIME_INSERT
+		limit 0,#{endCount}]]>
+    </select>
+
+</mapper>

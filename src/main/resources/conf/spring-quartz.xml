@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+      http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+      http://www.springframework.org/schema/context
+      http://www.springframework.org/schema/context/spring-context.xsd">
+    
+    <!-- 语音定时任务 -->
+	<bean id="autoSendVoiceController" class="com.lottery.print.controller.AutoSendVoiceController" />
+	<bean id="autoSendVoiceDetail"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="autoSendVoiceController" />
+		<property name="targetMethod" value="SendVoice" />
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="autoSendVoiceTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+		<property name="jobDetail" ref="autoSendVoiceDetail" />
+		<!-- 在服务器启动后60秒中启用方法execute()-->
+		<property name="startDelay" value="6000" />
+		<!-- 每次执行方法execute()的间隔时间为60秒-->
+		<property name="repeatInterval" value="4000" />
+		<!-- 为了使得jobs不并发运行 -->
+	</bean>
+   
+    <!-- 短信定时任务 -->
+	<bean id="autoSendSmsController" class="com.lottery.print.controller.AutoSendSmsController" />
+	<bean id="autoSendSmsDetail"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="autoSendSmsController" />
+		<property name="targetMethod" value="SendSms" />
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="autoSendSmsTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+		<property name="jobDetail" ref="autoSendSmsDetail" />
+		<!-- 在服务器启动后60秒中启用方法execute()-->
+		<property name="startDelay" value="2000" />
+		<!-- 每次执行方法execute()的间隔时间为60秒-->
+		<property name="repeatInterval" value="2000" />
+		<!-- 为了使得jobs不并发运行 -->
+	</bean>
+	
+    <!-- 邮件定时任务 -->
+	<bean id="autoSendEmailController" class="com.lottery.print.controller.AutoSendEmailController" />
+	<bean id="autoSendEmailDetail"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="autoSendEmailController" />
+		<property name="targetMethod" value="SendEmail" />
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="autoSendEmailTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+		<property name="jobDetail" ref="autoSendEmailDetail" />
+		<!-- 在服务器启动后60秒中启用方法execute()-->
+		<property name="startDelay" value="10000" />
+		<!-- 每次执行方法execute()的间隔时间为60秒-->
+		<property name="repeatInterval" value="8000" />
+		<!-- 为了使得jobs不并发运行 -->
+	</bean>
+	
+	<!-- 通知结果定时任务 -->
+	<bean id="autoSendStateController" class="com.lottery.print.controller.AutoSendStateController" />
+	<bean id="autoSendStateDetail"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="autoSendStateController" />
+		<property name="targetMethod" value="execute" />
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="autoSendStateTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+		<property name="jobDetail" ref="autoSendStateDetail" />
+		<!-- 在服务器启动后60秒中启用方法execute()-->
+		<property name="startDelay" value="6000" />
+		<!-- 每次执行方法execute()的间隔时间为60秒-->
+		<property name="repeatInterval" value="5000" />
+		<!-- 为了使得jobs不并发运行 -->
+	</bean>
+
+	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="triggers">
+			<list>
+			    <!--<ref bean="autoSendVoiceTrigger" />-->
+				<ref bean="autoSendSmsTrigger" />
+				<!--<ref bean="autoSendEmailTrigger" />-->
+				<!--  
+				<ref bean="autoSendStateTrigger" />
+				-->   
+			</list>
+		</property>
+	</bean>
+</beans>

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+"http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+
+<mapper namespace="com.lottery.print.dao.IMerchantInfoDAO">
+	
+	<resultMap type="TbMerchantInfo" id="TbMerchantInfoResult" />
+
+	<!-- 用于select查询公用抽取的列 -->
+	<sql id="tbMerchantInfoColumns">
+	    <![CDATA[
+        	MERCH_ID as merchId,
+        	MERCH_NAME as merchName,
+        	CREATE_TIME as createTime,
+        	STATE as state,
+        	MERCH_KEY as merchKey,
+        	MERCH_CALL_URL as merchCallUrl,
+        	MERCH_DEC as merchDec
+	    ]]>
+	</sql>
+
+	<insert id="insert" parameterType="TbMerchantInfo" >
+    <![CDATA[
+        INSERT INTO
+        TB_MERCHANT_INFO (
+        	MERCH_ID ,
+        	MERCH_NAME ,
+        	CREATE_TIME ,
+        	STATE ,
+        	MERCH_KEY ,
+        	MERCH_CALL_URL ,
+        	MERCH_DEC 
+        ) VALUES (
+        	#{merchId,jdbcType=DECIMAL} ,
+        	#{merchName,jdbcType=VARCHAR} ,
+        	#{createTime,jdbcType=TIMESTAMP} ,
+        	#{state,jdbcType=DECIMAL} ,
+        	#{merchKey,jdbcType=VARCHAR} ,
+        	#{merchCallUrl,jdbcType=VARCHAR} ,
+        	#{merchDec,jdbcType=VARCHAR} 
+        )
+    ]]>
+		<!--	
+			oracle: order="BEFORE" SELECT sequenceName.nextval AS ID FROM DUAL 
+			DB2: order="BEFORE"" values nextval for sequenceName
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="userId">
+			SELECT sequenceName.nextval AS ID FROM DUAL 
+        </selectKey>
+		-->
+	</insert>
+    
+	<update id="update" parameterType="TbMerchantInfo">
+    <![CDATA[
+        UPDATE TB_MERCHANT_INFO SET
+	        MERCH_NAME = #{merchName,jdbcType=VARCHAR} ,
+	        STATE = #{state,jdbcType=DECIMAL} ,
+	        MERCH_KEY = #{merchKey,jdbcType=VARCHAR} ,
+	        MERCH_CALL_URL = #{merchCallUrl,jdbcType=VARCHAR} ,
+	        MERCH_DEC = #{merchDec,jdbcType=VARCHAR} 
+        WHERE 
+	        MERCH_ID = #{merchId} 
+    ]]>
+	</update>
+
+    <delete id="delete" parameterType="Integer">
+    <![CDATA[
+        delete from TB_MERCHANT_INFO where
+        MERCH_ID = #{id} 
+    ]]>
+    </delete>
+    
+    <select id="getById" parameterType="Integer" resultMap="TbMerchantInfoResult">
+		select <include refid="tbMerchantInfoColumns" />
+	    <![CDATA[
+		    from TB_MERCHANT_INFO 
+	        where 
+		        MERCH_ID = #{id} 
+	    ]]>
+	</select>
+	
+	<sql id="tbMerchantInfoDynamicWhere">
+		<where>
+	       <if test="@Ognl@isNotEmpty(merchId)">
+				and MERCH_ID = #{merchId}
+			</if>
+	       <if test="@Ognl@isNotEmpty(merchName)">
+				and MERCH_NAME = #{merchName}
+			</if>
+	       <if test="@Ognl@isNotEmpty(createTime)">
+				and CREATE_TIME = #{createTime}
+			</if>
+	       <if test="@Ognl@isNotEmpty(state)">
+				and STATE = #{state}
+			</if>
+	       <if test="@Ognl@isNotEmpty(merchKey)">
+				and MERCH_KEY = #{merchKey}
+			</if>
+	       <if test="@Ognl@isNotEmpty(merchCallUrl)">
+				and MERCH_CALL_URL = #{merchCallUrl}
+			</if>
+	       <if test="@Ognl@isNotEmpty(merchDec)">
+				and MERCH_DEC = #{merchDec}
+			</if>
+		</where>
+	</sql>
+		
+    <select id="count" resultType="long">
+        select count(*) from TB_MERCHANT_INFO 
+		<include refid="tbMerchantInfoDynamicWhere"/>    
+    </select>
+    
+    <!--
+    	分页查询已经使用Dialect进行分页,也可以不使用Dialect直接编写分页
+    	因为分页查询将传 offset,pageSize,lastRows 三个参数,不同的数据库可以根于此三个参数属性应用不同的分页实现
+    -->
+    <select id="pageSelect" resultMap="TbMerchantInfoResult">
+    	select <include refid="tbMerchantInfoColumns" />
+	    from TB_MERCHANT_INFO 
+		<include refid="tbMerchantInfoDynamicWhere"/>
+		<if test="@Ognl@isNotEmpty(sortColumns)">
+			ORDER BY ${sortColumns}
+		</if>
+    </select>
+
+	
+</mapper>
